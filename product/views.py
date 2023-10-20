@@ -83,7 +83,13 @@ def search_product(request):
         if company:
             filters['company__icontains'] = company
 
-        filtered_products = Product.objects.filter(seller = self.request.user.customuser).filter(**filters)
+        filtered_products = None
+
+        if request.user.customuser.role == "seller":
+            filtered_products = Product.objects.filter(seller = request.user.customuser).filter(**filters)
+        else:
+            filtered_products = Product.objects.filter(**filters)
+            
         serialized_products = ProductSerializer(filtered_products, many=True)
 
         return Response({'success': True, 'data': serialized_products.data}, status=status.HTTP_200_OK)
