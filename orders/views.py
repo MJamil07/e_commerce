@@ -23,6 +23,7 @@ class CreateOrdersAPIView(APIView):
             try:
                   order_data = request.data;
                   product_id = order_data.get('product')
+                  quantity = order_data.get('quantity')
 
                   # * check if product exists are not
                   if not Product.objects.filter(id = product_id).exists():
@@ -30,6 +31,11 @@ class CreateOrdersAPIView(APIView):
 
                   if 'status' in order_data:
                         order_data['status'] = 'process'
+
+                  current_product = Product.objects.get(id = product_id)
+
+                  if current_product.quantity < quantity:
+                        return Response({'success' : False , 'message' : f'Product Out Of Stock available quantity {current_product.quantity}'} , status.HTTP_400_BAD_REQUEST)
 
                   serialized_data = OrderSerializer(data = {'user' : request.user.pk , **order_data})
 
